@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wizardfile>
+	<wizard id = "MissileWeaponAbility">
+		<name>Missile Ability/Weapon</name>
+		<description>Creates a missile based ability or weapon</description>
+		<objecttypes create = "Actor;Weapon;Unit;Model;Effect;Mover;Sound" />
+		<category>Missiles</category>
+		<instructions>
+			Select the type of missile you want. Weapon will create a weapon that launches missiles, that you can add to a unit. Targeted ability will create an ability that will target. You will need to add the ability to the command card and unit. Untargeted ability is the same as target, except it will fire to a target around the caster, depending on how you want to sort.
+		</instructions>
+		
+		<input id = "Name" type = "CString">
+			<name>Name</name>
+			<tooltip>Name of the ability or weapon</tooltip>
+		</input>
+		<input id = "Identification" type = "CString">
+			<name>ID</name>
+			<tooltip>ID of the weapon or ability.</tooltip>
+		</input>
+		
+		<!-- General Conditions -->
+		<condition id = "IsWeapon" input = "Type" value = "Weapon"/>
+		<condition id = "IsAbilityTarget" input = "Type" value = "EffectTarget"/>
+		<condition id = "IsAbilityInstant" input = "Type" value = "EffectInstant"/>
+		
+		<condition id ="IsTargeted" logic = "or">
+			<condition id = "IsWeapon"/>
+			<condition id = "IsAbilityTarget"/>
+		</condition>
+		
+		<condition id = "NoSpacesForID">
+			<condition logic = "not">
+				<condition input = "Identification" value = " " match = "contain"/>
+			</condition>
+			
+		</condition>
+		
+		<validate type = "Error">
+			<condition input = "Identification" empty = "0"/>
+			<text>The ID can not be empty</text>
+		</validate>
+		
+		<validate type = "Error">
+			<condition id = "NoSpacesForID"/>
+			<text>The ID can not contain any spaces</text>
+		</validate>
+		
+		<validate type = "Error">
+			<condition logic = "not">
+				<condition input = "Identification" value = "ImpactEffect:Identification"/>
+			</condition>
+			<text value = "Launch Missile effect and Impact Effect ID's can not be the same"/>
+		</validate>
+		<!-- Weapon Conditions -->
+		
+		<condition id = "AttackPerSecond" input = "AttackSpeedOption" value = "APS"/>
+		<condition id = "SecondPerAttack" input = "AttackSpeedOption" value = "SPA"/>
+		
+		<input id = "Type" type = "WizardRadio">
+			<name>Type</name>
+			<tooltip>Select the type of missile you want</tooltip>
+			<item text = "Weapon" value = "Weapon" />
+			<item text = "Targeted Ability" value = "EffectTarget" />
+		<!--	<item text = "Untargeted Ability" value = "EffectInstant" />-->
+			<default value = "Weapon"/>
+		</input>
+		
+		<!-- General Inputs -->
+		<input id = "Targets" type = "CTargetFilters">
+			<name>Target Filters</name>
+			<condition id = "IsTargeted" />
+			<layout column = "2"/>
+		</input>
+		
+		<!-- Ability Inputs -->
+		
+		<input id = "AbilityRange" type = "int16">
+			<name>Weapon Range</name>
+			<condition id = "IsAbilityTarget"/>
+			<layout column = "3"/>
+			<default value = "0"/>
+			<maximum value = "500"/>
+			<minimum value = "0" />
+		</input>
+		
+		<input id = "AbilityCostText" type = "WizardText">
+			<name>Ability Cost</name>
+			<layout column = "4"/>
+		</input>
+		
+		<input id = "AbilityCooldown" type = "CFixed">
+			<condition id = "IsAbilityTarget"/>
+			<layout column = "4"/>
+			<default value = "0"/>
+			<maximum value = "500"/>
+			<minimum value = "0" />
+		</input>
+		
+		<!-- Weapon Inputs -->
+
+		<input id = "WeaponRange" type = "int16">
+			<name>Weapon Range</name>
+			<condition id = "IsWeapon"/>
+			<layout column = "3"/>
+			<default value = "0"/>
+			<maximum value = "500"/>
+			<minimum value = "0" />
+		</input>
+		
+		<input id = "WeaponRangeSlop" type ="int16">
+			<name>Range Slop</name>
+			<tooltip>Distance a target can travel beyond the weapons range before the unit loses acquisition and switches to a new target.</tooltip>
+			<condition id = "IsWeapon"/>
+			<layout column = "4"/>
+			<minimum value = "0"/>
+			<default value = "1"/>
+		</input>
+		
+		<input id = "AttackSpeedOption" type = "WizardRadio">
+			<name>Attack Speed Display</name>
+			<tooltip>Sets how the attack speed is determined. Attacks per second or interval between attacks</tooltip>
+			<condition id = "IsWeapon" />
+			<item text ="Attack Per Second" value = "APS"/>
+			<item text ="Seconds per attack (Period)" value = "SPA"/>
+			<layout column = "3"/>
+		</input>
+		
+		<input id = "WeaponSpeedPerSecond" type = "CFixed">
+			<name>Attack Speed</name>
+			<tooltip>Specifies the time between attacks</tooltip>
+			<condition>
+				<condition id = "IsWeapon" />
+				<condition id = "SecondPerAttack" />
+			</condition>
+			<layout column = "3"/>
+		</input>
+		
+		<input id = "WeaponSpeedPerAttack" type = "CFixed">
+			<name>Attack Speed</name>
+			<tooltip>Specifies the attacks per second</tooltip>
+			<condition>
+				<condition id = "IsWeapon" />
+				<condition id = "AttackPerSecond" />
+			</condition>
+			<layout column = "3"/>
+		</input>
+		
+		<input id = "DamagePoint" type = "CFixed">
+			<name>Damage Point</name>
+			<tooltip>Delay from when the unit starts an attack (locks on to the target) and the attack actually occurring (the effect executing). This can affect how responsive the weapon feels. A damage point of 0 means a unit will instantly do its weapon effect once they lock on.</tooltip>
+			<condition id = "IsWeapon" />
+			<minimum value = "0"/>
+			<layout column = "4"/>
+		</input>
+		
+		<input id = "Arc" type = "CFangle">
+			<name>Arc</name>
+			<tooltip>The arc from the direction the unit faces where the weapon can target. If this is set to 0, the unit has to directly face the target to attack. This arc forms a cone in front of the unit. So for example, if you wanted to hit any unit in front of the unit, you would use 180.</tooltip>
+			<condition id = "IsWeapon" />
+			<layout column = "4"/>
+		</input>
+		
+		<input id = "ArcSlop" type = "CFangle">
+			<name>Arc Slop</name>
+			<tooltip>The arc a target can move outside the Arc of the weapon before target lock is lost, and the unit looks for a new target.</tooltip>
+			<condition id = "IsWeapon" />
+			<layout column = "4"/>
+		</input>
+		
+		<input id = "WeaponIcon" type = "CImagePath">
+			<name>Weapon Icon</name>
+			<tooltip>The icon that will display on the unit for the weapon</tooltip>
+			<condition id = "IsWeapon" />
+			<layout column = "4"/>
+		</input>
+		
+		<!-- Page 2 -->
+		<!-- Mover Fields -->
+		<input id = "MoverFields" type = "WizardText">
+			<name>Mover Fields</name>
+			<tooltip>Fields the control how the missile moves</tooltip>
+			<layout page = "2" />
+			<color value="255,128,0,0"/>
+		</input>
+		
+		<input id = "MissileType" type = "WizardMenu">
+			<name>Missile Type</name>
+			<item text = "Guided" value = "Guidance" />
+			<item text = "Rocket" value = "Throw" />
+			<layout page = "2" />
+		</input>
+		
+		<input id = "MissileSpeed" type = "CMissileSpeed">
+			<name>Missile Speed</name>
+			<minimum value = "0"/>
+			<maximum value = "300"/>
+			<layout page = "2" />
+			<increment value ="0.5"/>
+		</input>
+		
+		<!-- Art Fields -->
+		<input id = "Art Fields" type = "WizardText">
+			<name>Art Fields</name>
+			<tooltip>Fields the control art and sounds of the missile</tooltip>
+			<layout page = "2" column = "2"/>
+		</input>
+		
+		<input id = "MissileModel" type = "CModelPath">
+			<name>Missile Model</name>
+			<tooltip>Select the model for the missile</tooltip>
+			<layout page = "2" column = "2"/>
+		</input>
+		
+		<input id = "ImpactModel" type = "CModelPath">
+			<name>Impact Model</name>
+			<tooltip>Select the model that is displayed on impact of the missile</tooltip>
+			<layout page = "2" column = "2"/>
+		</input>
+		
+		<input id = "ImpactSound" type = "CSoundPath">
+			<name>Impact Sound</name>
+			<tooltip>Select the sound that is played on impact of the missile</tooltip>
+			<layout page = "2" column = "2"/>
+		</input>
+		
+		<!-- Page 3 -->
+		
+		<!-- Impact Effect -->
+		<input id = "ImpactEffect" type = "Wizard:EffectCreation">
+			<layout page = "3"/>	
+		</input>
+		<input id = "ImpactLocationType" type = "WizardRadio">
+			<name>Impact Location</name>
+			<item text = "Unit" value = "Unit"/>
+			<item text = "Point" value = "Point"/>
+			<item text = "Unit or Point" value = "UnitOrPoint"/>
+			<layout page = "3" column = "2"/>
+		</input>
+		
+		<input id = "ImpactLocation" type = "WizardRadio">
+			<name>Impact Location</name>
+			<item text = "Caster" value = "Caster"/>
+			<item text = "Source" value = "Source"/>
+			<item text = "Origin" value = "Origin"/>
+			<item text = "Target" value = "Target"/>
+			<layout page = "3" column = "2"/>
+		</input>
+		
+		<!-- Macros -->
+		<macro id = "MissileIdentifier">^Name^Missile</macro>
+		
+		<!-- Data Entries -->
+		<entry catalog = "Weapon" type = "CWeaponLegacy">
+			<id>^Identification^</id>
+			<condition id = "IsWeapon"/>
+			<field id = "Name">
+				<value>^Name^</value>
+			</field>
+			<field id = "Range">
+				<value>^WeaponRange^</value>
+			</field>
+			<field id = "Period">
+				<condition id = "SecondPerAttack" />
+				<value>^WeaponSpeedPerSecond^</value>
+			</field>
+			<field id = "Period">
+				<condition id = "AttackPerSecond" />
+				<value>1/^WeaponSpeedPerAttack^</value>
+			</field>
+			<field id = "Arc">
+				<value>^Arc^</value>
+			</field>
+			<field id = "ArcSlop">
+				<value>^ArcSlop^</value>
+			</field>
+			<field id ="DamagePoint">
+				<value>^DamagePoint^</value>
+			</field>
+			<field id ="Icon">
+				<value>^WeaponIcon^</value>
+			</field>
+			<field id ="DisplayEffect">
+				<value>^EffectCreation:Identification^</value>
+			</field>
+		</entry>	
+		
+		<entry catalog = "Unit" type = "CUnit">
+			<id>^Identification^Weapon</id>
+			<parentid>MISSILE_INVULNERABLE</parentid>
+			<field id = "Name">
+				<value>^Name^ Missile</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Effect" type = "CEffectLaunchMissile">
+			<id>^Identification^</id>
+			<field id = "Name">
+				<value>^Name^ Launch Missile</value>
+			</field>
+			<field id = "ImpactEffect">
+				<value>^EffectCreation:Identification^</value>
+			</field>
+			<field id = "ImpactLocation">
+				<value>^ImpactLocation^^ImpactLocationType^</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Effect" type = "^EffectCreation:EffectType^">
+			<id>^EffectCreation:Identification^</id>
+			<field id = "Name">
+				<value>^EffectCreation:Name^</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Actor" type = "CActorAction">
+			<parentid>GenericAttack</parentid>
+			<id>^Identification^Attack</id>
+			<field id = "Name">
+				<value>^Name^ Attack</value>
+			</field>
+			<!-- Events -->
+			<field id = "On_Send">
+				<index>1</index>
+				<value>ActionImpact</value>
+			</field>
+			<field id = "On_Terms">
+				<index>1</index>
+				<value>Effect.^EffectCreation:Identification^.Start; FromEffectTreeDescendant</value>
+			</field>
+			<field id = "On_Send">
+				<index>6</index>
+				<value>Create</value>
+			</field>
+			<field id = "On_Terms">
+				<index>6</index>
+				<value>Effect.^Identification^.Start; At Caster</value>
+			</field>
+			
+			<!-- Impact -->
+			
+		</entry>
+		
+		<entry catalog = "Actor" type = "CActorMissile">
+			<id>^Identification^AttackMissile</id>
+			<field id = "Name">
+				<value>^Name^ Attack Missile</value>
+			</field>
+			<parentid>GenericAttackMissile</parentid>
+			<field id = "On_Send">
+				<index>0</index>
+				<value>Create</value>
+			</field>
+			<field id = "On_Terms">
+				<index>0</index>
+				<value>UnitBirth.^Identification^Weapon</value>
+			</field>
+			<field id = "Model">
+				<value>^Identification^Weapon</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Model" type = "CModel">
+			<parentid>ImpactFX</parentid>
+			<field id = "Name">
+				<value>^Name^ Impact</value>
+			</field>
+			<id>^Identification^AttackImpact</id>
+			<field id = "Model">
+				<value>^ImpactModel^</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Model" type = "CModel">
+			<parentid>MissileFX</parentid>
+			<id>^Identification^Weapon</id>
+			<field id = "Name">
+				<value>^Name^ Impact</value>
+			</field>
+			<field id = "Model">
+				<value>^MissileModel^</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Mover" type = "CMoverMissile">
+			<id>^Identification^Weapon</id>
+			<field id = "Name">
+				<value>^Name^ Missile</value>
+			</field>
+			<field id = "MotionPhases_Driver">
+				<index>0</index>
+				<value>^MissileType^</value>
+			</field>
+			<field id = "MotionPhases_Acceleration">
+				<index>0</index>
+				<value>3200</value>
+			</field>
+			<field id = "MotionPhases_Speed">
+				<index>0</index>
+				<value>^MissileSpeed^</value>
+			</field>
+			<field id = "MotionPhases_MaxSpeed">
+				<index>0</index>
+				<value>^MissileSpeed^</value>
+			</field>
+		</entry>
+		
+		<entry catalog = "Sound" type = "CSound">
+			<id>^Identification^AttackImpact</id>
+			<parentid>Combat</parentid>
+			<field id = "Name">
+				<value>^Name^ Impact</value>
+			</field>
+			<field id = "AssetArray_File">
+				<index>0</index>
+				<value>^ImpactSound^</value>
+			</field>
+		</entry>
+	</wizard>
+	
+	<wizard id = "EffectCreation">
+		<name>Effect</name>
+		<objecttypes create = "Effect"/>
+		<instructions>
+			Enter the name of the effect, and select from the dropdown the type of effect you want. 
+		</instructions>
+		
+		<condition id = "IsDamageEffect" input = "EffectType" value = "CEffectDamage" />
+		<condition id = "DamageVisible" input = "DamageFields" visible = "1"/>
+		
+		<input id = "EffectType" type = "WizardMenu">
+			<name>Effect Type</name>
+			<item text = "Apply Behavior" value = "CEffectApplyBehavior"/>
+			<item text = "Apply Force" value = "CEffectApplyForce"/>
+			<item text = "Create Persistent" value = "CEffectCreatePersistent"/>
+			<item text = "Create Unit" value = "CEffectCreateUnit"/>
+			<item text = "Damage" value = "CEffectDamage"/>
+			<item text = "Launch Missile" value = "CEffectLaunchMissile"/>
+			<item text = "Search Area" value = "CEffectEnumArea"/>
+			<item text = "Issue Order" value = "CEffectIssueOrder"/>
+			<item text = "Modify Unit" value = "CEffectModifyUnit"/>
+			<item text = "Modify Player" value = "CEffectModifyPlayer"/>
+		</input>
+		
+		<input id = "Name" type = "CString">
+			<name>Name</name>
+			<tooltip>Name of the effect</tooltip>
+		</input>
+		<input id = "Identification" type = "CString">
+			<name>ID</name>
+			<tooltip>ID of the effect</tooltip>
+		</input>
+		
+		<!-- Damage Related Fields -->
+		<input id = "DamageFields" type = "WizardText">
+			<condition id = "IsDamageEffect" />
+			<layout column = "2" />
+			<default value = "Damage Related Fields"/>	
+		</input>
+		
+		<input id = "DamageAmount" type = "CFixed">
+			<condition id = "DamageVisible" />
+			<layout column = "2" />
+			<name>Damage Amount</name>
+			<default value = "0"/>
+			<minimum value = "0"/>
+		</input>
+		
+		<input id = "DamageType" type = "WizardMenu">
+			<condition id = "DamageVisible" />
+			<name>Damage Type</name>
+			<layout column = "2" />
+			<item value = "Spell" text = "Spell"/>
+			<item value = "Ranged" text = "Ranged" />
+			<item value = "Splash" text = "Splash" />
+			<item value = "Melee" text = "Melee" />
+		</input>
+		
+		<entry catalog = "Effect" type = "^EffectType^">
+			<id>^Identification^</id>
+			
+			<field id = "Name">
+				<value>^Name^</value>
+			</field>
+			<!-- Damage Related Fields -->
+		
+			<field id = "Amount">
+				<condition id = "IsDamageEffect" />
+				<value>^DamageAmount^</value>
+			</field>
+			<field id = "Kind">
+				<condition id = "IsDamageEffect" />
+				<value>^DamageType^</value>
+			</field>
+		</entry>
+	</wizard>
+	
+</wizardfile>

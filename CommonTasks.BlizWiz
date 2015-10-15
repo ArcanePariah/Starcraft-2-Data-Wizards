@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wizardfile>
+	<wizard id = "BehaviorTargetAbility">
+		<name>Create Ability to apply a behavior</name>
+		<objecttypes create = "Ability;Effect;Behavior" load = "Ability;Effect;Behavior"/>
+		<instructions page = "1">
+			Specify the behavior you want to create an effect target ability for.
+		</instructions>
+		<input id = "Behavior" type = "CBehaviorLinkArray">
+			<name>Behavior</name>
+		</input>
+		<input id = "AbilityName" type = "CString">
+			<name>Ability Name</name>
+		</input>
+		<entry catalog = "Effect" type = "CEffectApplyBehavior">
+			<id>^Behavior^</id>
+			<count></count>
+			<field id = "Behavior">
+				<value>^Behavior^</value>			
+			</field>
+		</entry>
+		
+		<entry catalog = "Abil" type = "CAbilEffectTarget">
+			<id>^AbilityName^</id>
+			<field id = "Effect">
+				<index>0</index>
+				<value>^Behavior^</value>
+			</field>
+		</entry>
+	</wizard>
+	
+
+	
+	<wizard id = "Multileveleffect">
+		<name>Multi Level Effect</name>
+		<objecttypes create = "Effect"/>
+		<instructions>
+			Enter the name of the effect, and select from the dropdown the type of effect you want. Enter how many levels of the effect you want.
+			
+			If you select a damage effect, you can select the amount of damage for the base level and the damage to increase by per level, as well as the damage type.
+		</instructions>
+		
+		<condition id = "IsDamageEffect" input = "EffectType" value = "CEffectDamage" />
+		<condition id = "DamageVisible" input = "DamageFields" visible = "1"/>
+		
+		<macro id = "EntryModification">^ENTRYINDEX^ + 1</macro>
+		<macro id = "DamageAddition">^ENTRYINDEX^ * ^DamagePerLevel^</macro>
+				
+		<input id = "EffectType" type = "WizardMenu">
+			<name>Effect Type</name>
+			<item text = "Apply Behavior" value = "CEffectApplyBehavior"/>
+			<item text = "Apply Force" value = "CEffectApplyForce"/>
+			<item text = "Create Persistent" value = "CEffectCreatePersistent"/>
+			<item text = "Create Unit" value = "CEffectCreateUnit"/>
+			<item text = "Damage" value = "CEffectDamage"/>
+			<item text = "Launch Missile" value = "CEffectLaunchMissile"/>
+			<item text = "Search Area" value = "CEffectEnumArea"/>
+			<item text = "Issue Order" value = "CEffectIssueOrder"/>
+			<item text = "Modify Unit" value = "CEffectModifyUnit"/>
+			<item text = "Modify Player" value = "CEffectModifyPlayer"/>
+		</input>
+		
+		<input id = "EffectID" type = "CString">
+			<name>Name</name>
+		</input>
+		
+		<input id = "NumOfLevels" type = "int8">
+			<name>Levels</name>
+			<default value = "1"/>
+			<minimum value = "1"/>
+		</input>
+		
+		<!-- Damage Related Fields -->
+		<input id = "DamageFields" type = "WizardText">
+			<condition id = "IsDamageEffect" />
+			<default value = "Damage Related Fields"/>
+			<layout column = "2" />
+		</input>
+		
+		<input id = "DamageAmount" type = "CFixed">
+			<condition id = "DamageVisible" />
+			<layout column = "2" />
+			<name>Damage Amount</name>
+			<default value = "0"/>
+			<minimum value = "0"/>
+		</input>
+		
+		<input id = "DamagePerLevel" type = "CFixed">
+			<condition id = "DamageVisible" />
+			<condition logic = "not">
+				<condition input = "NumOfLevels" value = "1"/>
+			</condition>
+			<layout column = "2" />
+			<name>Damage Per Level</name>
+			<tooltip>How much damage to add per level</tooltip>
+			<default value = "0"/>
+			<minimum value = "0"/>
+		</input>
+		
+		<input id = "DamageType" type = "WizardMenu">
+			<condition id = "DamageVisible" />
+			
+			<name>Damage Type</name>
+			<layout column = "2" />
+			<item value = "Spell" text = "Spell"/>
+			<item value = "Ranged" text = "Ranged" />
+			<item value = "Splash" text = "Splash" />
+			<item value = "Melee" text = "Melee" />
+		</input>
+		
+		<!-- Data Entries -->
+		<entry catalog = "Effect" type = "^EffectType^">
+			<id>^EffectID^ ^EntryModification^</id>
+			<count>^NumOfLevels^</count>
+			<!-- Damage Related Fields -->
+			<field id = "Amount">
+				<condition id = "IsDamageEffect" />
+				<value>^DamageAmount^ + ^DamageAddition^</value>
+			</field>
+			<field id = "Kind">
+				<condition id = "IsDamageEffect" />
+				<value>^DamageType^</value>
+			</field>
+		</entry>
+	</wizard>
+	
+	<wizard id = "UnitActorCreation">
+		<name>Unit Actor Creation</name>
+		<objecttypes create = "Actor;Model" />
+		<instructions>
+			Name the actor and select the model you want to use for it
+		</instructions>
+		<input id = "ActorName" type = "CString">
+			<name>Actor Name</name>
+		</input>
+		<input id = "Model" type = "CModelPath">
+			<name>Model</name>
+		</input>
+		
+		<entry catalog = "Actor" type = "CActorUnit">
+			<id>^ActorName^</id>
+			<parentid>GenericUnitStandard</parentid>
+			<field id = "Model">
+				<value>^ActorName^ Model</value>
+			</field>
+		</entry>
+		<entry catalog = "Model" type = "CModel">
+			<id>^ActorName^ Model</id>
+			<field id = "Model">
+				<value>^Model^</value>
+			</field>
+		
+		</entry>
+	</wizard>
+	
+	
+</wizardfile>

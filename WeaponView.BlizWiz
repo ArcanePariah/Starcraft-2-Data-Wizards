@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wizardfile>
+	<wizard id = "WeaponView">
+		<name>Weapon View</name>
+		<description>Multiple views for weapons</description>
+		<objecttypes view = "Weapon" />
+		
+		<!-- Categorization -->
+		
+		<input id = "DifficultyLevel" type = "WizardMenu">
+			<name>Field Display Level</name>
+			<item text = "Basic" value = "1"/>
+			<item text = "Advanced" value = "2"/>
+			<item text = "Expert" value = "3"/>
+		</input>
+	
+	
+	</wizard>
+
+
+
+
+</wizardfile>
